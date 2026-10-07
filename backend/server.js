@@ -14,6 +14,9 @@ app.use(express.json());
 app.use(cors());
 app.use(cookieParser());
 
+// Routes
+app.use('/api/auth', require('./routes/authRoutes'));
+
 // Simple Test Route
 app.get('/', (req, res) => {
   res.json({ message: "Clinical Appointment API is running" });
