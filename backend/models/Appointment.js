@@ -34,4 +34,13 @@ const appointmentSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
+// Partial unique index to prevent double‑booking for active appointments (PENDING or CONFIRMED)
+appointmentSchema.index(
+  { doctor: 1, date: 1, time: 1 },
+  {
+    unique: true,
+    partialFilterExpression: { status: { $in: ['PENDING', 'CONFIRMED'] } },
+  }
+);
+
 module.exports = mongoose.model('Appointment', appointmentSchema);

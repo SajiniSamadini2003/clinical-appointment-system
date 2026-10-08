@@ -23,10 +23,46 @@ exports.createAppointment = async (req, res) => {
     if (!doctor || !date || !time || !reason) {
       return res.status(400).json({ message: 'All fields are required' });
     }
+    // Validate date format YYYY-MM-DD
+    const dateRegex = /^\d{4}-\d{2}-\d{2}$/;
+    if (!dateRegex.test(date)) {
+      return res.status(400).json({ message: 'Invalid date format, expected YYYY-MM-DD' });
+    }
+
+    const parsedDate = new Date(date);
+    if (isNaN(parsedDate.getTime()) || parsedDate.toISOString().slice(0, 10) !== date) {
+      return res.status(400).json({ message: 'Invalid date value' });
+    }
+
+    // Ensure date is not in the past (compare strings)
+    const today = new Date();
+    const todayStr = today.toISOString().slice(0, 10);
+    if (date < todayStr) {
+      return res.status(400).json({ message: 'Appointment date cannot be in the past' });
+    }
+    // Validate time format HH:MM
+    const timeRegex = /^\d{2}:\d{2}$/;
+    if (!timeRegex.test(time)) {
+      return res.status(400).json({ message: 'Invalid time format, expected HH:MM' });
+    }
     // Verify doctor exists
     const doctorDoc = await Doctor.findById(doctor);
     if (!doctorDoc) {
       return res.status(404).json({ message: 'Doctor not found' });
+    }
+    // Ensure requested time is within doctor's configured availableSlots
+    if (!doctorDoc.availableSlots.includes(time)) {
+      return res.status(400).json({ message: 'Selected time is not available for this doctor' });
+    }
+    // Check for existing active appointment (PENDING or CONFIRMED) for same slot
+    const existing = await Appointment.findOne({
+      doctor,
+      date,
+      time,
+      status: { $in: ['PENDING', 'CONFIRMED'] }
+    });
+    if (existing) {
+      return res.status(409).json({ message: 'This appointment slot is already booked' });
     }
     // Create appointment – patient is derived from token
     const appointment = await Appointment.create({
@@ -37,9 +73,13 @@ exports.createAppointment = async (req, res) => {
       reason,
       status: 'PENDING'
     });
-    const populated = await appointment.populate(doctorPopulate).execPopulate();
+    const populated = await appointment.populate(doctorPopulate);
     res.status(201).json({ appointment: populated });
   } catch (error) {
+    // Handle duplicate key error from unique index
+    if (error.code === 11000) {
+      return res.status(409).json({ message: 'This appointment slot is already booked' });
+    }
     console.error(error);
     res.status(500).json({ message: 'Server error' });
   }

@@ -6,8 +6,16 @@ const {
   getDoctors,
   getDoctorById,
   updateDoctor,
-  deleteDoctor
+  deleteDoctor,
+  updateMyAvailability,
+  getAvailableSlots
 } = require('../controllers/doctorController');
+
+// Doctor self routes (must be before generic :id routes)
+router.put('/me/availability', protect, authorizeRoles('DOCTOR'), updateMyAvailability);
+
+// Public route for a doctor's available slots on a date
+router.get('/:id/available-slots', getAvailableSlots);
 
 // Public routes
 router.get('/', getDoctors);
@@ -19,3 +27,4 @@ router.put('/:id', protect, authorizeRoles('ADMIN'), updateDoctor);
 router.delete('/:id', protect, authorizeRoles('ADMIN'), deleteDoctor);
 
 module.exports = router;
+
