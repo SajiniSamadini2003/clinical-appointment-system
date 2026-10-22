@@ -19,6 +19,10 @@ const createDoctor = async (req, res) => {
       return res.status(400).json({ message: 'Missing required fields' });
     }
 
+    if (Number(experience) < 0 || Number(consultationFee) < 0) {
+      return res.status(400).json({ message: 'Experience and consultationFee must be non-negative' });
+    }
+
     // Check if user email already exists
     const existingUser = await User.findOne({ email: email.toLowerCase() });
     if (existingUser) {
@@ -180,8 +184,8 @@ const updateMyAvailability = async (req, res) => {
     if (!Array.isArray(availableSlots)) {
       return res.status(400).json({ message: 'availableSlots must be an array' });
     }
-    // Validate HH:MM format
-    const timeRegex = /^\d{2}:\d{2}$/;
+    // Validate HH:MM format (00-23:00-59)
+    const timeRegex = /^([01]\d|2[0-3]):([0-5]\d)$/;
     for (const slot of availableSlots) {
       if (!timeRegex.test(slot)) {
         return res.status(400).json({ message: `Invalid time format: ${slot}` });

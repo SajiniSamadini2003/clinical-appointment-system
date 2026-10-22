@@ -1,3 +1,4 @@
+const mongoose = require('mongoose');
 const Appointment = require('../models/Appointment');
 const Doctor = require('../models/Doctor');
 const User = require('../models/User');
@@ -23,6 +24,12 @@ exports.createAppointment = async (req, res) => {
     if (!doctor || !date || !time || !reason) {
       return res.status(400).json({ message: 'All fields are required' });
     }
+
+    // Validate Doctor ID format
+    if (!mongoose.Types.ObjectId.isValid(doctor)) {
+      return res.status(400).json({ message: 'Invalid doctor ID format' });
+    }
+
     // Validate date format YYYY-MM-DD
     const dateRegex = /^\d{4}-\d{2}-\d{2}$/;
     if (!dateRegex.test(date)) {
@@ -40,8 +47,8 @@ exports.createAppointment = async (req, res) => {
     if (date < todayStr) {
       return res.status(400).json({ message: 'Appointment date cannot be in the past' });
     }
-    // Validate time format HH:MM
-    const timeRegex = /^\d{2}:\d{2}$/;
+    // Validate time format HH:MM (00-23:00-59)
+    const timeRegex = /^([01]\d|2[0-3]):([0-5]\d)$/;
     if (!timeRegex.test(time)) {
       return res.status(400).json({ message: 'Invalid time format, expected HH:MM' });
     }
@@ -187,10 +194,30 @@ exports.updateAppointmentStatus = async (req, res) => {
     if (!doctorDoc || appointment.doctor.toString() !== doctorDoc._id.toString()) {
       return res.status(403).json({ message: 'Access denied' });
     }
+
+    // Terminal states cannot be altered
+    if (appointment.status === 'CANCELLED') {
+      return res.status(400).json({ message: 'Cannot update a cancelled appointment' });
+    }
+    if (appointment.status === 'COMPLETED') {
+      return res.status(400).json({ message: 'Completed appointments cannot be modified' });
+    }
+
+    // Normal workflow: PENDING -> CONFIRMED -> COMPLETED
+    if (status === 'CONFIRMED' && appointment.status !== 'PENDING') {
+      return res.status(400).json({ message: 'Only PENDING appointments can be confirmed' });
+    }
+    if (status === 'COMPLETED' && appointment.status !== 'CONFIRMED') {
+      return res.status(400).json({ message: 'Only CONFIRMED appointments can be completed' });
+    }
+
     appointment.status = status;
     await appointment.save();
     res.status(200).json({ message: 'Status updated', appointment });
   } catch (error) {
+    if (error.name === 'CastError') {
+      return res.status(400).json({ message: 'Invalid appointment ID format' });
+    }
     console.error(error);
     res.status(500).json({ message: 'Server error' });
   }
