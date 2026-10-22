@@ -19,6 +19,7 @@ app.use('/api/auth', require('./routes/authRoutes'));
 app.use('/api/test', require('./routes/testRoutes'));
 app.use('/api/doctors', require('./routes/doctorRoutes'));
 app.use('/api/appointments', require('./routes/appointmentRoutes'));
+app.use('/api/admin', require('./routes/adminRoutes'));
 
 // Simple Test Route
 app.get('/', (req, res) => {

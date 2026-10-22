@@ -1,5 +1,6 @@
 const Doctor = require('../models/Doctor');
 const User = require('../models/User');
+const Appointment = require('../models/Appointment');
 const bcrypt = require('bcrypt');
 
 // Create a new doctor (ADMIN only)
@@ -150,6 +151,12 @@ const deleteDoctor = async (req, res) => {
       return res.status(404).json({ message: 'Doctor not found' });
     }
 
+    // Safety check: block doctor deletion if any appointments reference this doctor
+    const existingAppointment = await Appointment.findOne({ doctor: req.params.id });
+    if (existingAppointment) {
+      return res.status(409).json({ message: 'This doctor has appointment records and cannot be deleted.' });
+    }
+
     // Delete the linked User document
     await User.findByIdAndDelete(doctor.user);
 
@@ -161,8 +168,6 @@ const deleteDoctor = async (req, res) => {
     res.status(500).json({ message: 'Server error deleting doctor' });
   }
 };
-
-const Appointment = require('../models/Appointment');
 
 // Update own availability (DOCTOR only)
 const updateMyAvailability = async (req, res) => {
