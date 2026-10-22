@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import { useParams, Link } from 'react-router-dom'
 import api from '../services/api'
 import { useAuth } from '../context/AuthContext'
@@ -27,6 +27,19 @@ const DoctorDetails = () => {
   const [bookingSuccess, setBookingSuccess] = useState('')
   const [bookingError, setBookingError] = useState('')
 
+  // Ref to track latest requested date to ignore stale out-of-order API responses
+  const activeDateRef = useRef('')
+
+  // Reset booking form state if doctor ID changes
+  useEffect(() => {
+    setSelectedDate('')
+    setAvailableSlots([])
+    setSelectedTime('')
+    setHasFetchedSlots(false)
+    setBookingSuccess('')
+    setBookingError('')
+  }, [id])
+
   // 1. Fetch Doctor Details
   useEffect(() => {
     const fetchDoctor = async () => {
@@ -54,22 +67,30 @@ const DoctorDetails = () => {
     async (date) => {
       if (!id || !date) return
 
+      activeDateRef.current = date
       setLoadingSlots(true)
       setSlotsError('')
       setHasFetchedSlots(true)
 
       try {
         const response = await api.get(`/doctors/${id}/available-slots`, {
-          params: { date }
+          params: { date, _t: Date.now() }
         })
-        setAvailableSlots(response.data?.availableSlots || [])
+        // Only update state if this response corresponds to the latest requested date
+        if (activeDateRef.current === date) {
+          setAvailableSlots(response.data?.availableSlots || [])
+        }
       } catch (err) {
-        setSlotsError(
-          err.response?.data?.message || 'Failed to load available slots for this date.'
-        )
-        setAvailableSlots([])
+        if (activeDateRef.current === date) {
+          setSlotsError(
+            err.response?.data?.message || 'Failed to load available slots for this date.'
+          )
+          setAvailableSlots([])
+        }
       } finally {
-        setLoadingSlots(false)
+        if (activeDateRef.current === date) {
+          setLoadingSlots(false)
+        }
       }
     },
     [id]
@@ -128,15 +149,15 @@ const DoctorDetails = () => {
       setSelectedTime('')
       setReason('')
 
-      // Refresh slots for the chosen date so booked slot is no longer shown
-      fetchAvailableSlots(selectedDate)
+      // Refresh slots for the chosen date so booked slot is immediately removed
+      await fetchAvailableSlots(selectedDate)
     } catch (err) {
       if (err.response?.status === 409) {
         setBookingError(
           'This appointment time has already been booked. Please choose another time.'
         )
         // Refresh slots in case someone else just took that slot
-        fetchAvailableSlots(selectedDate)
+        await fetchAvailableSlots(selectedDate)
       } else {
         setBookingError(
           err.response?.data?.message || 'Failed to book appointment. Please try again.'
@@ -245,6 +266,12 @@ const DoctorDetails = () => {
               <span className="text-gray-400 block text-xs uppercase">Phone Contact</span>
               <span className="font-medium text-gray-800">
                 {doctor.user?.phone || 'Not available'}
+              </span>
+            </div>
+            <div>
+              <span className="text-gray-400 block text-xs uppercase">Email</span>
+              <span className="font-medium text-gray-800 truncate block">
+                {doctor.user?.email || 'Not available'}
               </span>
             </div>
             <div>

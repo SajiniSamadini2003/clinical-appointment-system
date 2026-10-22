@@ -25,4 +25,29 @@ api.interceptors.request.use(
   }
 )
 
+// --- Response interceptor ---
+// If any request returns 401 (Unauthorized), the token has expired or is
+// invalid. Clear the stored credentials and redirect to the login page so
+// the user gets a clean session rather than seeing confusing error messages.
+api.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    if (error.response?.status === 401) {
+      // Only redirect if we had a token stored (i.e. the session expired).
+      // Skip for the login request itself to avoid redirect loops.
+      const hadToken = !!localStorage.getItem('token')
+      const isLoginRequest = error.config?.url?.includes('/auth/login')
+
+      if (hadToken && !isLoginRequest) {
+        localStorage.removeItem('token')
+        localStorage.removeItem('user')
+        // Redirect to login – use window.location so React Router state
+        // is fully reset alongside the cleared auth state.
+        window.location.href = '/login'
+      }
+    }
+    return Promise.reject(error)
+  }
+)
+
 export default api

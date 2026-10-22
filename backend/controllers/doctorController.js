@@ -223,6 +223,7 @@ const getAvailableSlots = async (req, res) => {
     }).select('time');
     const bookedTimes = booked.map(a => a.time);
     const availableSlots = configuredSlots.filter(slot => !bookedTimes.includes(slot));
+    res.set('Cache-Control', 'no-store, no-cache, must-revalidate, private');
     res.status(200).json({ doctor: doctor._id, date, availableSlots });
   } catch (error) {
     console.error(error);
