@@ -225,12 +225,28 @@ const getAvailableSlots = async (req, res) => {
   }
 };
 
+// Get own doctor profile (DOCTOR only)
+const getMyDoctorProfile = async (req, res) => {
+  try {
+    const doctor = await Doctor.findOne({ user: req.user._id }).populate('user', 'name email phone role');
+    if (!doctor) {
+      return res.status(404).json({ message: 'Doctor profile not found' });
+    }
+    res.status(200).json(doctor);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Server error fetching doctor profile' });
+  }
+};
+
 module.exports = {
   createDoctor,
   getDoctors,
   getDoctorById,
+  getMyDoctorProfile,
   updateDoctor,
   deleteDoctor,
   updateMyAvailability,
   getAvailableSlots
 };
+
