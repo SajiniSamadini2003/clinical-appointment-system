@@ -1,35 +1,24 @@
 import { Link } from 'react-router-dom'
 
+const PLACEHOLDER = '/doctor-placeholder.svg'
+
 /**
  * Reusable DoctorCard component
  * Displays doctor profile overview and links to DoctorDetails page using doctor._id
  */
 const DoctorCard = ({ doctor }) => {
   const doctorName = doctor.user?.name || 'Dr. Medical Specialist'
-  const initials = doctorName
-    .replace('Dr.', '')
-    .trim()
-    .split(' ')
-    .map((n) => n[0])
-    .join('')
-    .substring(0, 2)
-    .toUpperCase()
 
   return (
     <div className="bg-white rounded-xl shadow-sm border border-gray-100 hover:shadow-md transition flex flex-col p-6">
       <div className="flex items-start gap-4 mb-4">
-        {/* Profile Image or Avatar Placeholder */}
-        {doctor.profileImage ? (
-          <img
-            src={doctor.profileImage}
-            alt={doctorName}
-            className="w-16 h-16 rounded-full object-cover border-2 border-primary/20 flex-shrink-0"
-          />
-        ) : (
-          <div className="w-16 h-16 rounded-full bg-secondary text-primary font-bold text-lg flex items-center justify-center flex-shrink-0 border-2 border-primary/20">
-            {initials || 'DR'}
-          </div>
-        )}
+        {/* Profile Image with reliable placeholder fallback */}
+        <img
+          src={doctor.profileImage || PLACEHOLDER}
+          alt={doctorName}
+          className="w-16 h-16 rounded-full object-cover border-2 border-primary/20 flex-shrink-0"
+          onError={(e) => { e.currentTarget.onerror = null; e.currentTarget.src = PLACEHOLDER }}
+        />
 
         <div className="flex-1 min-w-0">
           <h3 className="text-lg font-bold text-gray-800 truncate" title={doctorName}>
@@ -58,7 +47,7 @@ const DoctorCard = ({ doctor }) => {
         <div className="flex items-center justify-between">
           <span className="text-gray-500">Consultation Fee:</span>
           <span className="font-semibold text-primary">
-            ${doctor.consultationFee}
+            Rs. {Number(doctor.consultationFee).toLocaleString('en-LK')}
           </span>
         </div>
       </div>

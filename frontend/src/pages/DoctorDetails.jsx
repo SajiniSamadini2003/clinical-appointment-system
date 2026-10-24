@@ -4,6 +4,8 @@ import api from '../services/api'
 import { useAuth } from '../context/AuthContext'
 import { getTodayDateString, formatDisplayTime } from '../utils/dateUtils'
 
+const PLACEHOLDER = '/doctor-placeholder.svg'
+
 const DoctorDetails = () => {
   const { id } = useParams()
   const { isAuthenticated, user } = useAuth()
@@ -221,18 +223,13 @@ const DoctorDetails = () => {
 
       {/* Doctor Profile Overview Card */}
       <div className="bg-white p-8 rounded-xl shadow-sm border border-gray-100 flex flex-col md:flex-row items-center md:items-start gap-8">
-        {/* Profile Image or Placeholder */}
-        {doctor.profileImage ? (
-          <img
-            src={doctor.profileImage}
-            alt={doctorName}
-            className="w-32 h-32 rounded-full object-cover border-4 border-primary/20 shadow-sm flex-shrink-0"
-          />
-        ) : (
-          <div className="w-32 h-32 bg-secondary rounded-full flex items-center justify-center text-primary text-3xl font-bold flex-shrink-0 border-4 border-primary/20 shadow-sm">
-            {initials || 'DR'}
-          </div>
-        )}
+        {/* Profile Image with reliable placeholder fallback */}
+        <img
+          src={doctor.profileImage || PLACEHOLDER}
+          alt={doctorName}
+          className="w-32 h-32 rounded-full object-cover border-4 border-primary/20 shadow-sm flex-shrink-0"
+          onError={(e) => { e.currentTarget.onerror = null; e.currentTarget.src = PLACEHOLDER }}
+        />
 
         {/* Doctor Information */}
         <div className="flex-1 text-center md:text-left space-y-3">
@@ -246,7 +243,7 @@ const DoctorDetails = () => {
                 Consultation Fee
               </span>
               <span className="text-2xl font-bold text-primary">
-                ${doctor.consultationFee}
+                Rs. {Number(doctor.consultationFee).toLocaleString('en-LK')}
               </span>
             </div>
           </div>
