@@ -1,3 +1,7 @@
 node_modules/
 .env
 dist/
+backend/utils/
+frontend/public/
+frontend/_redirects
+stdout/
