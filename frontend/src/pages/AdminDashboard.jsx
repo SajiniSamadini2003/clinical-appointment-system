@@ -588,7 +588,7 @@ const AdminDashboard = () => {
                           </span>
                         </div>
                         <span className="text-lg font-bold text-primary">
-                          ${doc.consultationFee}
+                          Rs. {doc.consultationFee.toLocaleString()}
                         </span>
                       </div>
 
