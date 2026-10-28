@@ -5,7 +5,8 @@ import axios from 'axios'
 // switch between local dev and a deployed backend without changing code.
 // The fallback 'http://localhost:5000/api' works for local development.
 const api = axios.create({
-  baseURL: import.meta.env.VITE_API_URL || 'http://localhost:5000/api'
+  // Ensure baseURL does not end with a trailing slash to avoid duplicate slashes when concatenating paths.
+  baseURL: (import.meta.env.VITE_API_URL || 'http://localhost:5000/api').replace(/\/+$/, '')
 })
 
 // --- Request interceptor ---

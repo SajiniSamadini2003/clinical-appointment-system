@@ -76,6 +76,26 @@ const PatientDashboard = () => {
   }
 
   // 3. Separate into Upcoming and Past Appointments
+
+  // 3b. Delete cancelled appointment handler
+  const handleDeleteCancelled = async (appointment) => {
+    if (appointment.status !== 'CANCELLED') return;
+    const confirmMessage = `Are you sure you want to delete this cancelled appointment on ${appointment.date} at ${formatDisplayTime(appointment.time)}?`;
+    if (!window.confirm(confirmMessage)) return;
+    setCancellingId(appointment._id);
+    setError('');
+    setActionSuccess('');
+    try {
+      const response = await api.delete(`/appointments/${appointment._id}`);
+      setActionSuccess(response.data?.message || 'Cancelled appointment deleted successfully.');
+      await fetchAppointments();
+    } catch (err) {
+      setError(err.response?.data?.message || 'Failed to delete appointment.');
+    } finally {
+      setCancellingId(null);
+    }
+  };
+
   // Upcoming: Today or future date AND active status (PENDING or CONFIRMED)
   const upcomingAppointments = appointments
     .filter(
@@ -317,6 +337,20 @@ const PatientDashboard = () => {
             ) : (
               <div className="space-y-3">
                 {pastAppointments.map((apt) => renderAppointmentCard(apt, false))}
+
+{/* Add Delete button for cancelled appointments */}
+{pastAppointments.map((apt) => (
+  <div key={apt._id} className="flex items-center justify-between">
+    {apt.status === 'CANCELLED' && (
+      <button
+        onClick={() => handleDeleteCancelled(apt)}
+        className="px-3 py-1 text-xs text-white bg-red-600 rounded hover:bg-red-700"
+      >
+        Delete
+      </button>
+    )}
+  </div>
+))}
               </div>
             )}
           </div>
