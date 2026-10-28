@@ -8,6 +8,7 @@ const {
   getDoctorAppointments,
   updateAppointmentStatus,
   getAllAppointments,
+  deleteCancelledAppointment,
 } = require('../controllers/appointmentController');
 
 const router = express.Router();
@@ -22,5 +23,7 @@ router.get('/all', protect, authorizeRoles('ADMIN'), getAllAppointments);
 router.get('/:id', protect, getAppointmentById);
 router.put('/:id/cancel', protect, authorizeRoles('PATIENT'), cancelAppointment);
 router.put('/:id/status', protect, authorizeRoles('DOCTOR'), updateAppointmentStatus);
+// Delete cancelled appointment (PATIENT only)
+router.delete('/:id', protect, authorizeRoles('PATIENT'), deleteCancelledAppointment);
 
 module.exports = router;
