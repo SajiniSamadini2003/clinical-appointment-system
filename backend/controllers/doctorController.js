@@ -101,7 +101,7 @@ const getDoctorById = async (req, res) => {
   }
 };
 
-// Update doctor (ADMIN only for Phase 8)
+// Update doctor (ADMIN only)
 const updateDoctor = async (req, res) => {
   try {
     const {

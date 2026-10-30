@@ -22,8 +22,6 @@ A full-stack clinical appointment booking system developed with the **MERN** sta
 - [Application URLs](#application-urls)
 - [REST API Endpoints](#rest-api-endpoints)
 - [Security Features](#security-features)
-- [Testing Summary](#testing-summary)
-- [Image Handling & Portrait Functionality](#image-handling--portrait-functionality)
 - [Limitations & Future Enhancements](#limitations--future-enhancements)
 
 ---
@@ -331,45 +329,6 @@ npm run dev
 4. **Privilege Escalation Prevention:** The public registration endpoint (`POST /api/auth/register`) strictly sets `role: 'PATIENT'`. Administrative accounts can only be provisioned via the command-line seed script (`npm run create-admin`), and doctors can only be created by an authenticated `ADMIN`.
 5. **No Token or Secret Exposure:** Passwords are excluded from database queries using Mongoose `.select('-password')`. Environment files (`.env`) are excluded via `.gitignore`.
 6. **Automatic Session Expiry Handling:** An Axios response interceptor intercepts HTTP `401` errors, purges invalid localStorage credentials, and redirects the user cleanly to `/login`.
-
----
-
-## Testing Summary
-
-The system was verified using automated Node.js integration test suites executing real HTTP requests against the running Express server and MongoDB Atlas:
-
-- **Phase 8 Test Suite (`backend/test-phase8.js`):**
-  - Verified Admin login and JWT role verification.
-  - Verified Doctor creation with linked User model.
-  - Verified role-based route protection (non-admins receive HTTP `403` when attempting doctor creation).
-  - Verified public doctor retrieval and doctor updating.
-- **Phase 9 Test Suite (`backend/test-phase9.js`):**
-  - Verified patient appointment creation and patient ID extraction from JWT.
-  - Verified patient appointment isolation (patients cannot view other patients' bookings).
-  - Verified doctor appointment retrieval and doctor-specific status transitions (`PENDING` -> `CONFIRMED` -> `COMPLETED`).
-  - Verified patient cancellation workflow and prevention of cancelling `COMPLETED` appointments.
-- **Phase 10 Test Suite (`backend/test-phase10.js`):**
-  - Verified doctor availability updates and time regex validation (`HH:MM`).
-  - Verified dynamic slot deduction: booked slots on a date are excluded from public slot queries.
-  - Verified double-booking prevention: attempting to book an active slot returns HTTP `409 Conflict`.
-- **Frontend Route Verification (`frontend/test-react-routes.js`):**
-  - Verified server-side static rendering of all client routes (`/`, `/login`, `/register`, `/doctors`, `/patient/dashboard`, `/doctor/dashboard`, `/admin/dashboard`, and 404 `/invalid-page`).
-
----
-
-## Image Handling & Portrait Functionality
-
-- In earlier iterations, external image portrait URLs occasionally resulted in broken image links or CORS/network latency issues.
-- The current implementation provides a **resilient two-tier image strategy**:
-  1. **Safe Fallback SVG:** The frontend includes a local vector fallback (`/doctor-placeholder.svg`).
-  2. **Error Recovery Handler:** In both [`DoctorCard.jsx`](file:///c:/Users/ASUS/Desktop/ClinicalAppointmentSystem/frontend/src/components/DoctorCard.jsx) and [`DoctorDetails.jsx`](file:///c:/Users/ASUS/Desktop/ClinicalAppointmentSystem/frontend/src/pages/DoctorDetails.jsx), the `<img>` tag implements an `onError` event listener:
-     ```jsx
-     onError={(e) => { 
-       e.currentTarget.onerror = null; 
-       e.currentTarget.src = '/doctor-placeholder.svg'; 
-     }}
-     ```
-  3. **Local Placeholder Generator:** The script `backend/utils/createDoctorImages.js` generates static local demo portraits in `frontend/public/doctors/` for offline testing.
 
 ---
 

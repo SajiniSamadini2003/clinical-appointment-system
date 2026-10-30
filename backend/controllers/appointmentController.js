@@ -1,4 +1,4 @@
-// Appointment controller with corrected syntax and validation logic
+// Appointment controller - handles booking, cancellation, and status transitions
 const mongoose = require('mongoose');
 const Appointment = require('../models/Appointment');
 const Doctor = require('../models/Doctor');
@@ -189,7 +189,7 @@ exports.deleteCancelledAppointment = async (req, res) => {
     if (appointment.status !== 'CANCELLED') {
       return res.status(400).json({ message: 'Only cancelled appointments can be deleted' });
     }
-    await appointment.remove();
+    await appointment.deleteOne();
     return res.status(200).json({ message: 'Cancelled appointment deleted successfully' });
   } catch (error) {
     console.error(error);
