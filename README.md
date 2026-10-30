@@ -25,7 +25,6 @@ A full-stack clinical appointment booking system developed with the **MERN** sta
 - [Testing Summary](#testing-summary)
 - [Image Handling & Portrait Functionality](#image-handling--portrait-functionality)
 - [Limitations & Future Enhancements](#limitations--future-enhancements)
-- [License & Academic Integrity](#license--academic-integrity)
 
 ---
 
@@ -161,9 +160,6 @@ ClinicalAppointmentSystem/
 │   ├── package.json                 # Frontend dependencies and Vite scripts
 │   ├── tailwind.config.js           # Tailwind color palette and configuration
 │   └── vite.config.js               # Vite build configuration
-├── DATABASE_DESIGN.md               # Detailed database schemas and relationships
-├── PROJECT_EXPLANATION.md           # Beginner-friendly MERN architecture guide
-├── VIVA_GUIDE.md                    # 70+ technical viva questions, answers, and demo plan
 └── README.md                        # Master project documentation
 ```
 
@@ -390,9 +386,3 @@ The system was verified using automated Node.js integration test suites executin
 - Automated SMS and email appointment reminders 24 hours prior to scheduled consultations.
 - Patient electronic medical record (EMR) uploads for attaching lab reports and prescriptions.
 - Telemedicine video consultation integration via WebRTC.
-
----
-
-## License & Academic Integrity
-
-This project was designed and built solely for academic evaluation as a university undergraduate project. All demo doctor profiles and patient records are synthetic.
